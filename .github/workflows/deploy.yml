@@ -1,25 +1,30 @@
-name: Build and Deploy Spatial AI Map
+name: Build and Deploy Spatial AI Map to `deploy` branch
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
-  build-deploy:
+  build-and-publish:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Replace placeholder with Mapbox Token
+      - name: Prepare deployment directory
         run: |
-          sed -i "s|__MAPBOX_TOKEN__|${{ secrets.MAPBOX_TOKEN }}|g" index.html
+          mkdir deploy
+          cp spatial_ai_map_sample.csv deploy/
+          sed "s|__MAPBOX_TOKEN__|${{ secrets.MAPBOX_TOKEN }}|g" index.template.html > deploy/index.html
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy to `deploy` branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
-          publish_branch: gh-pages
-          keep_files: true
+          publish_dir: ./deploy
+          publish_branch: deploy

@@ -1,71 +1,67 @@
+
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Spatial AI & Machine Vision Map</title>
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/kepler.gl/umd/keplergl.min.js"></script>
+    <style>
+      html, body, #app {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      const KeplerGl = window.KeplerGl;
 
-<head>
-  <meta charset="utf-8" />
-  <title>Spatial AI & Machine Vision Map</title>
-  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/kepler.gl/umd/keplergl.min.js"></script>
-  <style>
-    html,
-    body,
-    #app {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: sans-serif;
-    }
-  </style>
-</head>
+      const csvUrl = 'https://raw.githubusercontent.com/Tarekbouamer/spatial-ai-map/main/spatial_ai_map_sample.csv';
+      const app = document.getElementById('app');
 
-<body>
-  <div id="app"></div>
-  <script>
-    const KeplerGl = window.KeplerGl;
-
-    const csvUrl = 'https://raw.githubusercontent.com/Tarekbouamer/spatial-ai-map/main/spatial_ai_map_sample.csv';
-    const app = document.getElementById('app');
-
-    fetch(csvUrl)
-      .then(response => response.text())
-      .then(csvText => {
-        const config = {
-          version: 'v1',
-          config: {
-            visState: {
-              layers: [
-                {
-                  type: 'point',
-                  config: {
-                    dataId: 'Spatial AI Companies',
-                    label: 'Companies',
-                    color: [0, 128, 255],
-                    columns: {
-                      lat: 'Latitude',
-                      lng: 'Longitude'
-                    },
-                    isVisible: true
+      fetch(csvUrl)
+        .then(response => response.text())
+        .then(csvText => {
+          const config = {
+            version: 'v1',
+            config: {
+              visState: {
+                layers: [
+                  {
+                    type: 'point',
+                    config: {
+                      dataId: 'Spatial AI Companies',
+                      label: 'Companies',
+                      color: [0, 128, 255],
+                      columns: {
+                        lat: 'Latitude',
+                        lng: 'Longitude'
+                      },
+                      isVisible: true
+                    }
                   }
-                }
-              ]
+                ]
+              }
             }
-          }
-        };
+          };
 
-        new KeplerGl.KeplerGl({
-          app,
-          mapboxApiAccessToken: '__MAPBOX_TOKEN__', // Placeholder here
-          datasets: [{
-            info: { label: 'Spatial AI Companies', id: 'spatial_ai_companies' },
-            data: csvText
-          }],
-          config
+          new KeplerGl.KeplerGl({
+            app,
+            mapboxApiAccessToken: '__MAPBOX_TOKEN__',
+            datasets: [{
+              info: { label: 'Spatial AI Companies', id: 'spatial_ai_companies' },
+              data: csvText
+            }],
+            config
+          });
         });
-      });
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>
