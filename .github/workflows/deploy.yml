@@ -20,7 +20,7 @@ jobs:
         run: |
           mkdir deploy
           cp spatial_ai_map_sample.csv deploy/
-          sed "s|__MAPBOX_TOKEN__|${{ secrets.MAPBOX_TOKEN }}|g" index.template.html > deploy/index.html
+          sed "s|__MAPBOX_TOKEN__|${{ secrets.MAPBOX_TOKEN }}|g" index.html > deploy/index.html
 
       - name: Deploy to `deploy` branch
         uses: peaceiris/actions-gh-pages@v3
