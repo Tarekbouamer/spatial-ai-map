@@ -1,67 +1,84 @@
-
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Spatial AI & Machine Vision Map</title>
-    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/kepler.gl/umd/keplergl.min.js"></script>
-    <style>
-      html, body, #app {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        font-family: sans-serif;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script>
-      const KeplerGl = window.KeplerGl;
 
-      const csvUrl = 'https://raw.githubusercontent.com/Tarekbouamer/spatial-ai-map/main/spatial_ai_map_sample.csv';
-      const app = document.getElementById('app');
+<head>
+  <meta charset="utf-8" />
+  <title>Spatial AI & Machine Vision Map</title>
 
-      fetch(csvUrl)
-        .then(response => response.text())
-        .then(csvText => {
-          const config = {
-            version: 'v1',
-            config: {
-              visState: {
-                layers: [
-                  {
-                    type: 'point',
-                    config: {
-                      dataId: 'Spatial AI Companies',
-                      label: 'Companies',
-                      color: [0, 128, 255],
-                      columns: {
-                        lat: 'Latitude',
-                        lng: 'Longitude'
-                      },
-                      isVisible: true
-                    }
-                  }
-                ]
-              }
-            }
-          };
+  <!-- Kepler + deck.gl UMD bundles -->
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/kepler.gl@2.6.4/umd/kepler.gl.min.js"></script>
+  <script src="https://unpkg.com/deck.gl@8.9.25/dist.min.js"></script>
 
-          new KeplerGl.KeplerGl({
-            app,
-            mapboxApiAccessToken: '__MAPBOX_TOKEN__',
+  <style>
+    html,
+    body,
+    #app {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script>
+    /*** 1️⃣  CONFIG  ***********************************************************/
+    const MAPBOX_TOKEN = 'pk.eyJ1IjoidGFyZWsxOTkxNDciLCJhIjoiY21hMm91b20wMmdkYjJxczczbXlidTZtNiJ9.Yif_Da5N9nXw68lQDbw_lA';
+    const CSV_URL = 'https://raw.githubusercontent.com/Tarekbouamer/spatial-ai-map/main/spatial_ai_map_sample.csv';
+
+    /*** 2️⃣  HELPERS  **********************************************************/
+    // Very tiny CSV→GeoJSON converter so Kepler understands coordinates
+    function csvToGeoJson(csv, latKey = 'Latitude', lonKey = 'Longitude') {
+      const [head, ...rows] = csv.trim().split('\n').map(r => r.split(','));
+      const latIdx = head.indexOf(latKey), lonIdx = head.indexOf(lonKey);
+      return {
+        type: 'FeatureCollection',
+        features: rows.map(r => ({
+          type: 'Feature',
+          properties: Object.fromEntries(head.map((k, i) => [k, r[i]])),
+          geometry: { type: 'Point', coordinates: [+r[lonIdx], +r[latIdx]] }
+        }))
+      };
+    }
+
+    /*** 3️⃣  LOAD DATA & BOOT  **************************************************/
+    fetch(CSV_URL)
+      .then(r => r.text())
+      .then(text => {
+        const geojson = csvToGeoJson(text);
+        kepler.gl.load(
+          {
+            appVersion: 'v1',
             datasets: [{
               info: { label: 'Spatial AI Companies', id: 'spatial_ai_companies' },
-              data: csvText
+              data: geojson
             }],
-            config
-          });
-        });
-    </script>
-  </body>
+            config: {
+              visState: {
+                layers: [{
+                  id: 'companies',
+                  type: 'point',
+                  config: {
+                    dataId: 'spatial_ai_companies',
+                    label: 'Companies',
+                    columns: { lat: 'Latitude', lng: 'Longitude' },
+                    color: [0, 128, 255]
+                  }
+                }]
+              }
+            }
+          },
+          { mapboxApiKey: MAPBOX_TOKEN, container: document.getElementById('app') }
+        );
+      })
+      .catch(err => console.error('Failed to build map:', err));
+  </script>
+</body>
+
 </html>
